@@ -6,7 +6,14 @@ def get_character_movies_from_api(character)
   #make the web request
   all_characters = RestClient.get('http://www.swapi.co/api/people/')
   character_hash = JSON.parse(all_characters)
-  
+
+
+  all_characters = character_hash["results"]
+  character_info = all_characters.find do |character_data|
+    character_data["name"] == character
+  end
+  films = character_info["films"]
+  films 
   # iterate over the character hash to find the collection of `films` for the given
   #   `character`
   # collect those film API urls, make a web request to each URL to get the info
@@ -18,14 +25,37 @@ def get_character_movies_from_api(character)
   #  of movies by title. play around with puts out other info about a given film.
 end
 
-def parse_character_movies(films_hash)
-  # some iteration magic and puts out the movies in a nice list
+def parse_character_movies(films_arr)
+  films_arr.map do |film_url|
+    film = RestClient.get(film_url)
+    film_info = JSON.parse(film)
+    film_info
+  end
 end
 
-def show_character_movies(character)
-  films_hash = get_character_movies_from_api(character)
-  parse_character_movies(films_hash)
+def film_info(film)
+  big_string = ''
+  film.each do |film_data|
+    big_string += "\n---------------\n"
+    film_data.each do |attribute, attribute_value|
+       big_string += "\n#{attribute}:\n" 
+      if attribute_value.is_a?(Array)
+        big_string += attribute_value.join("\n")
+      else
+      big_string += "#{attribute_value}\n"
+      end
+    end
+  end
+  big_string
 end
+
+
+def show_character_movies(character)
+  films_arr = get_character_movies_from_api(character)
+  film_info_arr = parse_character_movies(films_arr)
+  puts film_info(film_info_arr)
+end
+
 
 ## BONUS
 
